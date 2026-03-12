@@ -63,9 +63,6 @@ const PatientDashboard = () => {
             const availRes = await doctorService.getAvailableSlots(doc.id);
             setAvailability(availRes.data);
 
-            // We could use an actual API method for reviews (not implemented yet in services, let's create it inline)
-            // Actually we have it in reviewService! Oh wait, I need to create review.service.js. 
-            // Assuming we have it or will add it.
         } catch (e) {
             console.error(e);
             setAvailability([]);

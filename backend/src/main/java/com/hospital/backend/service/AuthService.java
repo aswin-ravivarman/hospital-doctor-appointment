@@ -70,51 +70,54 @@ public class AuthService {
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        Role userRole = Role.ROLE_PATIENT;
-        if (signUpRequest.getRole() != null) {
-            switch (signUpRequest.getRole().toLowerCase()) {
-                case "admin":
-                    userRole = Role.ROLE_ADMIN;
-                    break;
-                case "doctor":
-                    userRole = Role.ROLE_DOCTOR;
-                    break;
-                case "patient":
-                default:
-                    userRole = Role.ROLE_PATIENT;
-                    break;
-            }
-        }
-
-        // Create new user's account
+        // Create new user's account always as PATIENT
         User user = User.builder()
                 .email(signUpRequest.getEmail())
                 .password(encoder.encode(signUpRequest.getPassword()))
-                .role(userRole)
+                .role(Role.ROLE_PATIENT)
+                .fullName(signUpRequest.getFullName())
+                .phone(signUpRequest.getPhone())
+                .build();
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(new MessageResponse("User registered successfully as Patient!"));
+    }
+
+    @Transactional
+    public ResponseEntity<?> registerDoctor(SignupRequest signUpRequest) {
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Email is already in use!"));
+        }
+
+        // Create new user's account as DOCTOR
+        User user = User.builder()
+                .email(signUpRequest.getEmail())
+                .password(encoder.encode(signUpRequest.getPassword()))
+                .role(Role.ROLE_DOCTOR)
                 .fullName(signUpRequest.getFullName())
                 .phone(signUpRequest.getPhone())
                 .build();
 
         user = userRepository.save(user);
 
-        // If Doctor, create doctor entity
-        if (userRole == Role.ROLE_DOCTOR) {
-            Department dept = null;
-            if (signUpRequest.getDepartmentId() != null) {
-                dept = departmentRepository.findById(signUpRequest.getDepartmentId())
-                        .orElseThrow(() -> new RuntimeException("Error: Department not found."));
-            }
-
-            Doctor doctor = Doctor.builder()
-                    .user(user)
-                    .department(dept)
-                    .specialization(signUpRequest.getSpecialization())
-                    .experienceYears(signUpRequest.getExperienceYears())
-                    .consultationFee(signUpRequest.getConsultationFee())
-                    .build();
-            doctorRepository.save(doctor);
+        Department dept = null;
+        if (signUpRequest.getDepartmentId() != null) {
+            dept = departmentRepository.findById(signUpRequest.getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Error: Department not found."));
         }
 
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        Doctor doctor = Doctor.builder()
+                .user(user)
+                .department(dept)
+                .specialization(signUpRequest.getSpecialization())
+                .experienceYears(signUpRequest.getExperienceYears())
+                .consultationFee(signUpRequest.getConsultationFee())
+                .build();
+        doctorRepository.save(doctor);
+
+        return ResponseEntity.ok(new MessageResponse("Doctor registered successfully!"));
     }
 }

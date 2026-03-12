@@ -55,7 +55,6 @@ export const Navbar = () => {
     );
 };
 
-// Helper component since react-bootstrap's Navbar.Text seems weird sometimes
 const NavbarText = ({ children, className }) => (
     <span className={className}>{children}</span>
 );

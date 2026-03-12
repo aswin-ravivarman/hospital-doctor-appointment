@@ -9,32 +9,13 @@ const Register = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
-        role: 'patient',
         fullName: '',
-        phone: '',
-        departmentId: '',
-        specialization: '',
-        experienceYears: '',
-        consultationFee: ''
+        phone: ''
     });
 
-    const [departments, setDepartments] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        // Only fetch departments if we register as a doctor, or fetch initially
-        const fetchDepts = async () => {
-            try {
-                const res = await adminService.getDepartments();
-                setDepartments(res.data || []);
-            } catch (err) {
-                console.error("Failed to fetch departments", err);
-            }
-        };
-        fetchDepts();
-    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -97,53 +78,7 @@ const Register = () => {
                                     <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required minLength="6" />
                                 </Form.Group>
 
-                                <Form.Group className="mb-4">
-                                    <Form.Label>I am a</Form.Label>
-                                    <Form.Select name="role" value={formData.role} onChange={handleChange}>
-                                        <option value="patient">Patient</option>
-                                        <option value="doctor">Doctor</option>
-                                        <option value="admin">Admin</option>
-                                    </Form.Select>
-                                </Form.Group>
 
-                                {formData.role === 'doctor' && (
-                                    <div className="border p-3 rounded mb-4 bg-light">
-                                        <h5>Doctor Details</h5>
-                                        <Row>
-                                            <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Department</Form.Label>
-                                                    <Form.Select name="departmentId" value={formData.departmentId} onChange={handleChange} required>
-                                                        <option value="">Select Department</option>
-                                                        {departments.map(d => (
-                                                            <option key={d.id} value={d.id}>{d.name}</option>
-                                                        ))}
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
-                                            <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Specialization</Form.Label>
-                                                    <Form.Control type="text" name="specialization" value={formData.specialization} onChange={handleChange} required />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Experience (Years)</Form.Label>
-                                                    <Form.Control type="number" name="experienceYears" value={formData.experienceYears} onChange={handleChange} required />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col md={6}>
-                                                <Form.Group className="mb-3">
-                                                    <Form.Label>Consultation Fee ($)</Form.Label>
-                                                    <Form.Control type="number" name="consultationFee" value={formData.consultationFee} onChange={handleChange} required />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                    </div>
-                                )}
 
                                 <div className="d-grid mt-4">
                                     <Button variant="primary" type="submit" disabled={loading} size="lg">

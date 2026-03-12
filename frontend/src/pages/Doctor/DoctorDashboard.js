@@ -75,57 +75,72 @@ const DoctorDashboard = () => {
         }
     };
 
+    // Group appointments by date
+    const groupedAppointments = appointments.reduce((acc, appt) => {
+        const date = new Date(appt.appointmentDate).toLocaleDateString();
+        if(!acc[date]) acc[date] = [];
+        acc[date].push(appt);
+        return acc;
+    }, {});
+    const sortedDates = Object.keys(groupedAppointments).sort((a,b) => new Date(a) - new Date(b));
+
     return (
         <Container className="py-4">
             <h2 className="mb-4">Doctor Dashboard</h2>
 
             <Tabs defaultActiveKey="appointments" className="mb-4">
-                <Tab eventKey="appointments" title="Appointments">
+                <Tab eventKey="appointments" title="Appointments (Day-wise)">
                     <Card className="shadow-sm">
                         <Card.Body>
-                            <Table responsive hover>
-                                <thead>
-                                    <tr>
-                                        <th>Patient</th>
-                                        <th>Date & Time</th>
-                                        <th>Reason</th>
-                                        <th>Status</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {appointments.map(appt => (
-                                        <tr key={appt.id}>
-                                            <td>{appt.patient.fullName || appt.patient.username}</td>
-                                            <td>{new Date(appt.appointmentDate).toLocaleString()}</td>
-                                            <td>{appt.reason}</td>
-                                            <td>
-                                                <Badge bg={
-                                                    appt.status === 'CONFIRMED' ? 'primary' :
-                                                        appt.status === 'COMPLETED' ? 'success' :
-                                                            appt.status === 'PENDING' ? 'warning' : 'danger'
-                                                }>
-                                                    {appt.status}
-                                                </Badge>
-                                            </td>
-                                            <td>
-                                                {appt.status === 'PENDING' && (
-                                                    <>
-                                                        <Button size="sm" variant="success" className="me-2" onClick={() => handleStatusUpdate(appt.id, 'CONFIRMED')}>Confirm</Button>
-                                                        <Button size="sm" variant="danger" onClick={() => handleStatusUpdate(appt.id, 'REJECTED')}>Reject</Button>
-                                                    </>
-                                                )}
-                                                {appt.status === 'CONFIRMED' && (
-                                                    <Button size="sm" variant="info" className="text-white" onClick={() => handleStatusUpdate(appt.id, 'COMPLETED')}>Mark Completed</Button>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                    {appointments.length === 0 && (
-                                        <tr><td colSpan="5" className="text-center">No appointments found.</td></tr>
-                                    )}
-                                </tbody>
-                            </Table>
+                            {appointments.length === 0 ? (
+                                <div className="text-center py-4">No appointments found.</div>
+                            ) : (
+                                sortedDates.map(date => (
+                                    <div key={date} className="mb-4">
+                                        <h5 className="border-bottom pb-2 text-primary">{date}</h5>
+                                        <Table responsive hover size="sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Time</th>
+                                                    <th>Patient Name</th>
+                                                    <th>Reason</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {groupedAppointments[date].map(appt => (
+                                                    <tr key={appt.id}>
+                                                        <td>{new Date(appt.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                                        <td>{appt.patient.fullName || appt.patient.username}</td>
+                                                        <td>{appt.reason}</td>
+                                                        <td>
+                                                            <Badge bg={
+                                                                appt.status === 'CONFIRMED' ? 'primary' :
+                                                                    appt.status === 'COMPLETED' ? 'success' :
+                                                                        appt.status === 'PENDING' ? 'warning' : 'danger'
+                                                            }>
+                                                                {appt.status}
+                                                            </Badge>
+                                                        </td>
+                                                        <td>
+                                                            {appt.status === 'PENDING' && (
+                                                                <>
+                                                                    <Button size="sm" variant="success" className="me-2 mb-1" onClick={() => handleStatusUpdate(appt.id, 'CONFIRMED')}>Confirm</Button>
+                                                                    <Button size="sm" variant="danger" className="mb-1" onClick={() => handleStatusUpdate(appt.id, 'REJECTED')}>Reject</Button>
+                                                                </>
+                                                            )}
+                                                            {appt.status === 'CONFIRMED' && (
+                                                                <Button size="sm" variant="info" className="text-white" onClick={() => handleStatusUpdate(appt.id, 'COMPLETED')}>Complete</Button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </Table>
+                                    </div>
+                                ))
+                            )}
                         </Card.Body>
                     </Card>
                 </Tab>

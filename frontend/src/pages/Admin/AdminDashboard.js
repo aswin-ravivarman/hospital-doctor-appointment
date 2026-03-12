@@ -95,10 +95,19 @@ const AdminDashboard = () => {
     const handleAddDoctor = async (e) => {
         e.preventDefault();
         try {
-            // Using Register API but with Admin token (if needed, but register is public anyway for now)
-            const res = await fetch('http://localhost:8080/api/auth/signup', {
+            const userStr = localStorage.getItem('user');
+            let token = '';
+            if (userStr) {
+                const userObj = JSON.parse(userStr);
+                token = userObj.accessToken || userObj.token || '';
+            }
+            
+            const res = await fetch('http://localhost:8080/api/admin/register-doctor', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(newDoctor)
             });
             if (res.ok) {
@@ -125,7 +134,7 @@ const AdminDashboard = () => {
         }
     };
 
-    // Chart Data Preparation
+    // Chart Data Preparation is here
     const apptStatusData = {
         labels: ['Confirmed', 'Completed', 'Pending/Other'],
         datasets: [{
